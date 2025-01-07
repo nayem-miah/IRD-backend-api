@@ -2,19 +2,23 @@ from rest_framework import serializers
 from .models import Category, SubCategory, Dua
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'cat_name_bn', 'cat_name_en', 'no_of_subcat', 'no_of_dua', 'cat_icon']
-
 
 class SubCategorySerializer(serializers.ModelSerializer):
-    # Include the related category details (optional)
-    cat = CategorySerializer(read_only=True)
+    # Fetch additional category details directly
+    cat_name_en = serializers.CharField(source="cat.cat_name_en", read_only=True)
 
     class Meta:
         model = SubCategory
-        fields = ['id', 'cat', 'subcat_name_bn', 'subcat_name_en', 'no_of_dua']
+        fields = ['id', 'cat_name_en', 'subcat_name_bn', 'subcat_name_en', 'no_of_dua']
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    subcategories = SubCategorySerializer(many=True, read_only=True)  # Use detailed subcategory serializer
+
+    class Meta:
+        model = Category
+        fields = ['id', 'cat_name_bn', 'cat_name_en', 'no_of_subcat', 'no_of_dua', 'cat_icon', 'subcategories']
+
 
 
 class DuaSerializer(serializers.ModelSerializer):
